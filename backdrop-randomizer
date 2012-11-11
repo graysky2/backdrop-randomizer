@@ -1,0 +1,65 @@
+#!/bin/bash
+# By graysky <graysky AT archlinux DOT us>
+
+bd_list="$HOME/.config/xfce4/desktop/backdrop.list"
+
+if [[ ! -f $HOME/.config/backdrop-randomizer.conf ]]; then
+	echo "pic_path=/path/to/pics" > $HOME/.config/backdrop-randomizer.conf
+	echo "Define the path to your pics via the pic_path variable in"
+	echo "$HOME/.config/backdrop-randomizer.conf and try again."
+	exit 1
+else
+	. $HOME/.config/backdrop-randomizer.conf
+fi
+
+if [[ -z $(find "${pic_path}" -maxdepth 1 -name "*.jpg") ]]; then
+	echo "You have defined a path that contains no pics (jpg file extension)."
+	exit 1
+fi
+
+if [[ ! -f "$bd_list" ]]; then
+	echo "# xfce backdrop list" > "$bd_list"
+	find "${pic_path}" -maxdepth 1 -name "*.jpg" >> "$bd_list"
+fi
+
+# $bd_list MUST start with a comment which makes things more complicated
+# since we need to ignore the 1st line
+#
+# three conditions:
+# 1) there is one line left (the comment) so generate a new list
+# 2) there are two lines left (the comment + one pic) so use the only pic
+# 3) there are >two lines left so select a random number between 2 and $howmany
+
+howmany=$(cat "$bd_list" | wc -l)
+
+# check for condition #2
+if [[ $howmany -eq 2 ]]; then
+	useit=$(sed -n "2 p" "$bd_list")
+else
+	# check for condition #3
+	
+	rndpick=0
+	while [[ $rndpick -lt 2 ]]; do
+		rndpick=$((RANDOM%$howmany+1))
+		let "number %= $howmany"  # Scales $number down within $RANGE.
+	done
+	useit=$(sed -n "$rndpick p" "$bd_list")
+fi
+
+filename=$(basename $useit)
+[[ ! -z $(pidof xfdesktop) ]] && DISPLAY=:0.0 /usr/bin/xfdesktop --reload
+# remove it from the list
+sed -i "/$filename/d" "$bd_list"
+
+# check for condition #1 and rebuild if true
+howmany=$(cat "$bd_list" | wc -l)
+if [[ $howmany -eq 1 ]]; then
+	echo "# xfce backdrop list" > "$bd_list"
+	find "${pic_path}" -maxdepth 1 -name "*.jpg" >> "$bd_list"
+	
+	# exclude the one we just picked to create the illusion that we NEVER repeat :)
+	sed -i "/$filename/d" "$bd_list"
+	howmany=$(cat "$bd_list" | wc -l)
+fi
+
+
