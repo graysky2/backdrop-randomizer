@@ -14,7 +14,7 @@ Each time you or cron calls the script, it will randomly select a picture from y
 * Setup the image to "Single image" and select the symlink the script just made.
 * Call the script via cronjob at the desired interval. (Below example shows once every 20 min). Hint for newbies: edit your crontab like this: `crontab -e`
   
-	*/20 * * * *  /usr/bin/backdrop-randomizer
+	*/20 * * * *  /usr/bin/backdrop-randomizer R
 
 ##Links
 * AUR Package: https://aur.archlinux.org/packages/backdrop-randomizer

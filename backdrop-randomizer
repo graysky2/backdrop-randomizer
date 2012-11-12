@@ -140,13 +140,13 @@ randomize() {
 }
 
 case "$1" in
-	r)
+	R|r)
 		check ; randomize	;;
-	s)
+	S|s)
 		check ; stats ;;
-	l)
+	L|l)
 		check ; list ;;
-	c)
+	C|c)
 		check ; cycle ; randomize ;;
 	*) 
 		check
