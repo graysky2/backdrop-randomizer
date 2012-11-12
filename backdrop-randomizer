@@ -131,7 +131,7 @@ randomize() {
 		while [[ $rndpick -lt 2 ]]; do
 			rndpick=$((RANDOM%$howmany+1))
 		done
-		useit=$(sed -n "1 p" "$pic_list") && filename=$(basename $useit)
+		useit=$(sed -n "$rndpick p" "$pic_list") && filename=$(basename $useit)
 
 		sed -i "/$filename/d" "$pic_list"	# exclude the one we just picked to create the illusion that we NEVER repeat :)
 		ln -sf "$useit" "$SLINK_DIR"/backdrop-randomizer.jpg
