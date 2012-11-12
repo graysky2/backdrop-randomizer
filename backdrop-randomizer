@@ -6,7 +6,8 @@ if [[ -n $(pidof xscreensaver) ]] && [[ -f /usr/bin/xscreensaver-command  ]]; th
 	[[ -n $(xscreensaver-command -time | grep "screen blanked since")  ]] && exit 1
 fi
 
-bd_list="$HOME/.config/xfce4/desktop/backdrop.list"
+#bd_list="$HOME/.config/xfce4/desktop/backdrop.list"
+bd_list="$HOME/.config/backdrop-randomizer.list"
 
 if [[ ! -f $HOME/.config/backdrop-randomizer.conf ]]; then
 	echo "pic_path=/path/to/pics" > $HOME/.config/backdrop-randomizer.conf
