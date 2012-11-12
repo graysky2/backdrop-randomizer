@@ -1,6 +1,11 @@
 #!/bin/bash
 # By graysky <graysky AT archlinux DOT us>
 
+if [[ -n $(pidof xscreensaver) ]] && [[ -f /usr/bin/xscreensaver-command ]]; then
+	# xscreensaver is running so do nothing if screen is blanked
+	[[ -n $(xscreensaver-command -time | grep "screen blanked since") ]] && exit 1
+fi
+
 bd_list="$HOME/.config/xfce4/desktop/backdrop.list"
 
 if [[ ! -f $HOME/.config/backdrop-randomizer.conf ]]; then
