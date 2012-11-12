@@ -1,0 +1,12 @@
+v1.12
+11-Nov-2012
+Changed run mode from feh to xdesktop.
+
+v1.11
+11-Nov-2012
+Take no action if xscreensaver is blanked.
+
+v1.10
+11-Nov-2012
+Initial public release.
+
