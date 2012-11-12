@@ -1,72 +1,161 @@
 #!/bin/bash
-# By graysky <graysky AT archlinux DOT us>
-
-if [[ -n $(pidof xscreensaver) ]] && [[ -f /usr/bin/xscreensaver-command  ]]; then
-	# xscreensaver is running so do nothing if screen is blanked
-	[[ -n $(xscreensaver-command -time | grep "screen blanked since")  ]] && exit 1
-fi
-
-bd_list="$HOME/.config/backdrop-randomizer.list"
-
-if [[ ! -f $HOME/.config/backdrop-randomizer.conf ]]; then
-	echo "pic_path=/path/to/pics" > $HOME/.config/backdrop-randomizer.conf
-	echo "Define the path to your pics via the pic_path variable in"
-	echo "$HOME/.config/backdrop-randomizer.conf and try again."
-	exit 1
-else
-	. $HOME/.config/backdrop-randomizer.conf
-fi
-
-if [[ -z $(find "${pic_path}" -maxdepth 1 -name "*.jpg") ]]; then
-	echo "You have defined a path that contains no pics (jpg file extension)."
-	exit 1
-fi
-
-if [[ ! -f "$bd_list" ]]; then
-	echo "# xfce backdrop list" > "$bd_list"
-	find "${pic_path}" -maxdepth 1 -name "*.jpg" >> "$bd_list"
-fi
-
-# $bd_list MUST start with a comment which makes things more complicated
-# since we need to ignore the 1st line
 #
-# three conditions:
-# 1) there is one line left (the comment) so generate a new list
-# 2) there are two lines left (the comment + one pic) so use the only pic
-# 3) there are >two lines left so select a random number between 2 and $howmany
+# backdrop-randomizer
+# By graysky <graysky AT archlinux DOT us>
+#
+#	https://github.com/graysky2/backdrop-randomizer
+#
+# see manpage for usage
+#
+[[ -z "$XDG_CONFIG_HOME" ]] && XDG_CONFIG_HOME="$HOME/.config"	# make sure env var is setup correctly
+cfg_file=$XDG_CONFIG_HOME/backdrop-randomizer.conf
 
-howmany=$(cat "$bd_list" | wc -l)
+check() {
+	if [[ ! -f "$cfg_file" ]]; then
+		#	create $XDG_CONFIG_HOME/backdrop-randomizer.conf
+		echo '------------------------------------------------------------'
+		echo ' No config file found so creating a fresh one.'
+		echo
+		echo '#' > "$cfg_file"
+		echo '# $XDG_CONFIG_HOME/backdrop-randomizer.conf' >> "$cfg_file"
+		echo '#' >> "$cfg_file"
+		echo '# For documentation see the backdrop-randomizer manpage.' >> "$cfg_file"
+		echo '#' >> "$cfg_file"
+		echo '# Provide the full path to pics to be used.' >> "$cfg_file"
+		echo 'PIC_PATH=/path/to/pics' >> "$cfg_file"
+		echo  >> "$cfg_file"
+		echo '# Uncomment and redefine if you want to find pics recursively.' >> "$cfg_file"
+		echo '#MAXDEPTH=1' >> "$cfg_file"
+		echo  >> "$cfg_file"
+		echo '# Uncomment and redefine if you want to provide an alternative' >> "$cfg_file"
+		echo '# location where the database of pics will reside.' >> "$cfg_file"
+		echo '# You _MUST_ have rw permissions to the dir you define!' >> "$cfg_file"
+		echo "#BD_DIR=$XDG_CONFIG_HOME" >> "$cfg_file"
+		echo >> "$cfg_file"
+		echo '# Uncomment and redefine if you want to provide an alternative' >> "$cfg_file"
+		echo '# location of the symlink that will be updated by this script.' >> "$cfg_file"
+		echo '# You _MUST_ have rw permissions to the dir you define!' >> "$cfg_file"
+		echo "#SLINK_DIR=$XDG_CONFIG_HOME" >> "$cfg_file"
+		# done
+		echo ' Define the path to your pics via the PIC_PATH variable in'
+		echo ' $XDG_CONFIG_HOME/backdrop-randomizer.conf and try again.'
+		echo '------------------------------------------------------------'
+		exit 1
+	else
+		. "$cfg_file"
+	fi
 
-# check for condition #2
-if [[ $howmany -eq 2 ]]; then
-	useit=$(sed -n "2 p" "$bd_list")
-else
-	# check for condition #3
-	rndpick=0
-	while [[ $rndpick -lt 2 ]]; do
-		rndpick=$((RANDOM%$howmany+1))
-		let "number %= $howmany"  # Scales $number down within $RANGE.
-	done
-	useit=$(sed -n "$rndpick p" "$bd_list")
-fi
+	# check each var for correctness
+	[[ -z "$MAXDEPTH" ]] && MAXDEPTH=1
+	result=$(echo "$MAXDEPTH" | egrep ^[[:digit:]]+$)
+	if [ "$result" = "" ] ; then
+		echo 'Bad MAXDEPTH in $XDG_CONFIG_HOME/backdrop-randomizer.conf'
+		echo
+		echo 'You have defined a non-integer value.'
+		exit 1
+	else
+		/bin/true
+	fi
 
-filename=$(basename $useit)
+	[[ -z "$BD_DIR" ]] && BD_DIR=$XDG_CONFIG_HOME
+	if [[ ! -w "$BD_DIR" ]]; then
+		echo "Bad BD_DIR in $XDG_CONFIG_HOME/backdrop-randomizer.conf"
+		echo
+		echo 'You have defined a path to which you cannot write.'
+		exit 1
+	fi
 
-ln -sf "$useit" $HOME/.config/backdrop-randomizer.jpg
-[[ ! -z $(pidof xfdesktop) ]] && DISPLAY=:0.0 /usr/bin/xfdesktop --reload
+	[[ -z "$SLINK_DIR" ]] && SLINK_DIR=$XDG_CONFIG_HOME
+	if [[ ! -w "$SLINK_DIR" ]]; then
+		echo "Bad SLINK_DIR in $XDG_CONFIG_HOME/backdrop-randomizer.conf"
+		echo
+		echo 'You have defined a path to which you cannot write.'
+		exit 1
+	fi
 
-# remove it from the list
-sed -i "/$filename/d" "$bd_list"
+	# use only one find command to both test for pics and to generate pic_list
 
-# check for condition #1 and rebuild if true
-howmany=$(cat "$bd_list" | wc -l)
-if [[ $howmany -eq 1 ]]; then
-	echo "# xfce backdrop list" > "$bd_list"
-	find "${pic_path}" -maxdepth 1 -name "*.jpg" >> "$bd_list"
-	
-	# exclude the one we just picked to create the illusion that we NEVER repeat :)
-	sed -i "/$filename/d" "$bd_list"
-	howmany=$(cat "$bd_list" | wc -l)
-fi
+	pic_list="$BD_DIR/backdrop-randomizer.list"
+	[[ ! -f "$pic_list" ]] && find "${PIC_PATH}" -maxdepth "$MAXDEPTH" -name "*.jpg" -o -name "*.JPG" -o -name ".png" -o -name ".PNG" -o -name ".gif" -o -name ".GIF" > "$pic_list" 2>/dev/null
 
+	howmany=$(cat "$pic_list" | wc -l)
 
+	if [[ "$howmany" -eq 0 ]]; then
+		echo "Bad PIC_PATH in $XDG_CONFIG_HOME/backdrop-randomizer.conf"
+		echo
+		echo "You have defined a path that contains no pics and/or one that your user cannot access."
+		echo "Supported formats are: jpg, png, and gif."
+		# remove the empty file
+		rm -f "$pic_list"
+		exit 1
+	fi
+
+	if [[ -n $(pidof xscreensaver) ]] && [[ -x /usr/bin/xscreensaver-command  ]]; then
+		# xscreensaver is running so do nothing if screen is blanked
+		[[ -n $(xscreensaver-command -time | grep "screen blanked since")  ]] && exit 1
+	fi
+}
+
+stats() {
+	echo " Location of symlink: $SLINK_DIR/backdrop-randomizer.jpg"
+	echo " Database: $pic_list"
+	echo " Number of pics left before next cycle: $howmany"
+}
+
+list() {
+	echo " Individual list of pics:"
+	cat "$pic_list"
+}
+
+cycle() {
+	find "${PIC_PATH}" -maxdepth "$MAXDEPTH" -name "*.jpg" -o -name "*.JPG" -o -name ".png" -o -name ".PNG" -o -name ".gif" -o -name ".GIF" > "$pic_list" 2>/dev/null
+	howmany=$(cat "$pic_list" | wc -l)
+}
+
+randomize() {
+	# two conditions:
+	# 1)  1 line left so use the pic and regenerate the list
+	# 2) >1 line left so select a random number between 1 and $howmany
+
+	if [[ $howmany -eq 1 ]]; then
+		# condition 1 is true
+		useit=$(sed -n "1 p" "$pic_list") && filename=$(basename $useit)
+
+		find "${PIC_PATH}" -maxdepth "$MAXDEPTH" -name "*.jpg" -o -name "*.JPG" -o -name ".png" -o -name ".PNG" -o -name ".gif" -o -name ".GIF" > "$pic_list"
+		sed -i "/$filename/d" "$pic_list"	# exclude the one we just picked to create the illusion that we NEVER repeat :)
+		ln -sf "$useit" "$SLINK_DIR"/backdrop-randomizer.jpg
+		[[ ! -z $(pidof xfdesktop) ]] && DISPLAY=:0.0 /usr/bin/xfdesktop --reload
+	elif [[ $howmany -ge 2 ]]; then
+		# condition 2 is true
+		rndpick=1
+		while [[ $rndpick -lt 2 ]]; do
+			rndpick=$((RANDOM%$howmany+1))
+		done
+		useit=$(sed -n "1 p" "$pic_list") && filename=$(basename $useit)
+
+		sed -i "/$filename/d" "$pic_list"	# exclude the one we just picked to create the illusion that we NEVER repeat :)
+		ln -sf "$useit" "$SLINK_DIR"/backdrop-randomizer.jpg
+		[[ ! -z $(pidof xfdesktop) ]] && DISPLAY=:0.0 /usr/bin/xfdesktop --reload
+	fi
+}
+
+case "$1" in
+	r)
+		check ; randomize	;;
+	s)
+		check ; stats ;;
+	l)
+		check ; list ;;
+	c)
+		check ; cycle ; randomize ;;
+	*) 
+		check
+		echo -en "\E[31musage: "
+		tput sgr0 # reset colors to normal
+		echo "$0 {r|s|l|c}"
+		echo "r) select a pic at (R)andom from the database."
+		echo "s) display database (S)tats."
+		echo "c) (C)lear or (C)ycle the database and start anew."
+		echo "l) (L)ist all pics in the database."
+		;;
+esac
