@@ -115,8 +115,8 @@ cycle() {
 
 randomize() {
 	# two conditions:
-	# 1)  1 line left so use the pic and regenerate the list
-	# 2) >1 line left so select a random number between 1 and $howmany
+	# 1) 1 line left (one pic left) so use the pic and regenerate the list
+	# 2) 2 or more lines left so select a random number between 1 and $howmany
 
 	if [[ $howmany -eq 1 ]]; then
 		# condition 1 is true

@@ -8,10 +8,10 @@ Xfdesktop has a gap currently: it does not keep track of which images in a list 
 Each time you or cron calls the script, it will randomly select a picture from your list to display. It will then remove the selection from the list so as not to repeat the same pic twice per cycle. When backdrop-randomizer sees you have only one pic left in your list, it regenerates the list anew and continues to cycle. The net effect is an endless rotation of your pics without a repeat.
 
 ##Usage
-* Copy the script to where ever you wish (/usr/bin for example).
-* Define the path to your pics in $HOME/.config/backdrop-randomizer.conf (currently only .jpg files are supported).
-* Run it once to make symlink $HOME/.config/backdrop-randomizer.jpg and right-click the desktop and select Desktop Settings > Background.
-* Setup the image to "Single image" and select the symlink the script just made.
+* Copy the script to wherever you wish (/usr/bin for example).
+* Call the script to create $XDG_CONFIG_HOME/backdrop-randomizer.conf wherein you will define your options..
+* Right-click the xfce4 desktop and select Desktop Settings > Background.
+* Setup the image to "Single image" and select the symlink that the script made for you which is by default: $XDG_CONFIG_HOME/backdrop-randomizer.jpg
 * Call the script via cronjob at the desired interval. (Below example shows once every 20 min). Hint for newbies: edit your crontab like this: `crontab -e`
   
 	*/20 * * * *  /usr/bin/backdrop-randomizer R
