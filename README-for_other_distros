@@ -15,8 +15,9 @@ To "use" the randomized pics, backdrop-randomizer simply creates a symlink to th
 FUNCTION LETTERS
  R  Select a pic at (R)andom from the database.
  S  Display database (S)tats.
- C  (C)lear the databse and start anew.
  L	(L)ist all pics in the database.
+ A	(A)dd the next token to the database.
+ C  (C)lear the databse and start anew.
 
 SETUP
 1. Run it with no tokens and it will create a conf file if needed ($XDG_HOME_CONFIG/backdrop-randomizer.conf) which you should edit per the annotations therein.
@@ -26,6 +27,11 @@ SETUP
 
 Example:
 	*/20 * * * * /usr/bin/backdrop-randomizer R
+
+To add a pic to the database without recreating it, simply call the script with the 'A' functinon followed by the filename to add.
+
+Example:
+	backdrop-randomizer A newpic.jpg
 
 WHAT ELSE
 Should you be running xscreensaver, backdrop-randomizer will not rotate your pics if the screensaver is active or if the screen is locked. This is automatically detected and implemented.

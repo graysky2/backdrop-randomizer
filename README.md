@@ -16,6 +16,10 @@ Each time you or cron calls the script, it will randomly select a picture from y
   
 	*/20 * * * *  /usr/bin/backdrop-randomizer R
 
+	To add a pic to the database without recreating it, simply call the script with the 'A' functinon followed by the filename to add.
+
+	Example: backdrop-randomizer A newpic.jpg
+
 ##Links
 * AUR Package: https://aur.archlinux.org/packages/backdrop-randomizer
 * Discussion Thread: https://bbs.archlinux.org/viewtopic.php?id=152755

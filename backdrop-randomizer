@@ -73,12 +73,12 @@ check() {
 		exit 1
 	fi
 
-	# use only one find command to both test for pics and to generate pic_list
+	# use only one find command to both test for pics and to generate pic_database
 
-	pic_list="$BD_DIR/backdrop-randomizer.list"
-	[[ ! -f "$pic_list" ]] && find "${PIC_PATH}" -maxdepth "$MAXDEPTH" -name "*.jpg" -o -name "*.JPG" -o -name ".png" -o -name ".PNG" -o -name ".gif" -o -name ".GIF" > "$pic_list" 2>/dev/null
+	pic_database="$BD_DIR/backdrop-randomizer.list"
+	[[ ! -f "$pic_database" ]] && find "${PIC_PATH}" -maxdepth "$MAXDEPTH" -name "*.jpg" -o -name "*.JPG" -o -name ".png" -o -name ".PNG" -o -name ".gif" -o -name ".GIF" > "$pic_database" 2>/dev/null
 
-	howmany=$(cat "$pic_list" | wc -l)
+	howmany=$(cat "$pic_database" | wc -l)
 
 	if [[ "$howmany" -eq 0 ]]; then
 		echo "Bad PIC_PATH in $XDG_CONFIG_HOME/backdrop-randomizer.conf"
@@ -86,31 +86,39 @@ check() {
 		echo "You have defined a path that contains no pics and/or one that your user cannot access."
 		echo "Supported formats are: jpg, png, and gif."
 		# remove the empty file
-		rm -f "$pic_list"
+		rm -f "$pic_database"
 		exit 1
+	fi
+
+	# remove dups in database if they are present
+	uniques=$(awk ' !x[$0]++' "$pic_database" | wc -l)
+	if [[ "$howmany" != "$uniques" ]]; then
+		awk ' !x[$0]++' "$pic_database" > /tmp/.backdrop_nodups
+		mv /tmp/.backdrop_nodups "$pic_database"
+		howmany=$(cat "$pic_database" | wc -l)
 	fi
 
 	# do not rotate if screensaver is active or screen is locked
 	# works for xscreensaver only
 	if [[ -n $(pidof xscreensaver) ]] && [[ -x /usr/bin/xscreensaver-command  ]]; then
-		[[ -n $(xscreensaver-command -time | grep "screen blanked since")  ]]	|| [[ -n $(xscreensaver-command -time | grep "screen locked since") ]] && exit 1
+		[[ -n $(xscreensaver-command -time | grep "screen blanked since" 2>/dev/null)  ]]	|| [[ -n $(xscreensaver-command -time | grep "screen locked since" 2>/dev/null) ]] && exit 1
 	fi
 }
 
 stats() {
 	echo " Location of symlink: $SLINK_DIR/backdrop-randomizer.jpg"
-	echo " Database: $pic_list"
+	echo " Database: $pic_database"
 	echo " Number of pics left before next cycle: $howmany"
 }
 
 list() {
 	echo " Individual list of pics:"
-	cat "$pic_list"
+	cat "$pic_database"
 }
 
 cycle() {
-	find "${PIC_PATH}" -maxdepth "$MAXDEPTH" -name "*.jpg" -o -name "*.JPG" -o -name ".png" -o -name ".PNG" -o -name ".gif" -o -name ".GIF" > "$pic_list" 2>/dev/null
-	howmany=$(cat "$pic_list" | wc -l)
+	find "${PIC_PATH}" -maxdepth "$MAXDEPTH" -name "*.jpg" -o -name "*.JPG" -o -name ".png" -o -name ".PNG" -o -name ".gif" -o -name ".GIF" > "$pic_database" 2>/dev/null
+	howmany=$(cat "$pic_database" | wc -l)
 }
 
 randomize() {
@@ -120,10 +128,10 @@ randomize() {
 
 	if [[ $howmany -eq 1 ]]; then
 		# condition 1 is true
-		useit=$(sed -n "1 p" "$pic_list") && filename=$(basename $useit)
+		useit=$(sed -n "1 p" "$pic_database") && filename=$(basename $useit)
 
-		find "${PIC_PATH}" -maxdepth "$MAXDEPTH" -name "*.jpg" -o -name "*.JPG" -o -name ".png" -o -name ".PNG" -o -name ".gif" -o -name ".GIF" > "$pic_list"
-		sed -i "/$filename/d" "$pic_list"	# exclude the one we just picked to create the illusion that we NEVER repeat :)
+		find "${PIC_PATH}" -maxdepth "$MAXDEPTH" -name "*.jpg" -o -name "*.JPG" -o -name ".png" -o -name ".PNG" -o -name ".gif" -o -name ".GIF" > "$pic_database"
+		sed -i "/$filename/d" "$pic_database"	# exclude the one we just picked to create the illusion that we NEVER repeat :)
 		ln -sf "$useit" "$SLINK_DIR"/backdrop-randomizer.jpg
 		[[ ! -z $(pidof xfdesktop) ]] && DISPLAY=:0.0 /usr/bin/xfdesktop --reload
 	elif [[ $howmany -ge 2 ]]; then
@@ -132,15 +140,45 @@ randomize() {
 		while [[ $rndpick -lt 2 ]]; do
 			rndpick=$((RANDOM%$howmany+1))
 		done
-		useit=$(sed -n "$rndpick p" "$pic_list") && filename=$(basename $useit)
+		useit=$(sed -n "$rndpick p" "$pic_database") && filename=$(basename $useit)
 
-		sed -i "/$filename/d" "$pic_list"	# exclude the one we just picked to create the illusion that we NEVER repeat :)
+		sed -i "/$filename/d" "$pic_database"	# exclude the one we just picked to create the illusion that we NEVER repeat :)
 		ln -sf "$useit" "$SLINK_DIR"/backdrop-randomizer.jpg
 		[[ ! -z $(pidof xfdesktop) ]] && DISPLAY=:0.0 /usr/bin/xfdesktop --reload
 	fi
 }
 
+add() {
+	if [[ -z "$arg" ]]; then
+		echo "You must provide a supported image."
+		exit 1
+	fi
+
+	file=$(/usr/bin/readlink -f "$arg")
+	if [[ -n $(echo "$file"| grep -E '*.jpg|*.JPG|*.gif|*.GIF|*.png|*.PNG') ]]; then
+		# check for dups
+		if [[ -n $(grep "$file" "$pic_database") ]]; then
+			echo " File already exists in db."
+			echo " Refusing to add it twice."
+			exit 1
+		fi
+
+		before=$(cat "$pic_database" | wc -l)
+		echo "$file" >> "$pic_database"
+		after=$(cat "$pic_database" | wc -l)
+		echo " Database: $pic_database"
+		echo "$file added to database."
+		echo "Number of pics before: $before"
+		echo "Number of pics after: $after"
+	else
+		echo "Not a supported image file: $file"
+		echo "Currently, only jpeg, gif, and png images are supported."
+	fi
+}
+
 case "$1" in
+	A|a)
+		check ; arg="$2" ; add ;;
 	R|r)
 		check ; randomize	;;
 	S|s)
@@ -153,10 +191,11 @@ case "$1" in
 		check
 		echo -en "\E[31musage: "
 		tput sgr0 # reset colors to normal
-		echo "$0 {r|s|l|c}"
+		echo "$0 {r|s|l|a|c}"
 		echo "r) select a pic at (R)andom from the database."
 		echo "s) display database (S)tats."
-		echo "c) (C)lear or (C)ycle the database and start anew."
 		echo "l) (L)ist all pics in the database."
+		echo "a) (A) the next token to database."
+		echo "c) (C)lear or (C)ycle the database and start anew."
 		;;
 esac
