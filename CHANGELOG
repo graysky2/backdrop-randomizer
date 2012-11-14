@@ -1,3 +1,7 @@
+v2.11
+13-Nov-2012
+Do not cycle if xscreensaver has locked screen or is active
+
 v2.10
 12-Nov-2012
 Total re-write of code.
