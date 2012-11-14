@@ -19,4 +19,3 @@ Each time you or cron calls the script, it will randomly select a picture from y
 ##Links
 * AUR Package: https://aur.archlinux.org/packages/backdrop-randomizer
 * Discussion Thread: https://bbs.archlinux.org/viewtopic.php?id=152755
-* Wiki: https://wiki.archlinux.org/index.php/backdrop-randomizer
