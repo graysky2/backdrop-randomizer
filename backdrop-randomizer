@@ -90,9 +90,10 @@ check() {
 		exit 1
 	fi
 
+	# do not rotate if screensaver is active or screen is locked
+	# works for xscreensaver only
 	if [[ -n $(pidof xscreensaver) ]] && [[ -x /usr/bin/xscreensaver-command  ]]; then
-		# xscreensaver is running so do nothing if screen is blanked
-		[[ -n $(xscreensaver-command -time | grep "screen blanked since")  ]] && exit 1
+		[[ -n $(xscreensaver-command -time | grep "screen blanked since")  ]]	|| [[ -n $(xscreensaver-command -time | grep "screen locked since") ]] && exit 1
 	fi
 }
 
