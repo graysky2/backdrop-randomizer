@@ -106,9 +106,11 @@ check() {
 }
 
 stats() {
-	echo " Location of symlink: $SLINK_DIR/backdrop-randomizer.jpg"
-	echo " Database: $pic_database"
 	echo " Number of pics left before next cycle: $howmany"
+	echo
+	echo " Database:      $pic_database"
+	echo " Current pic:   $(readlink -f $SLINK_DIR/backdrop-randomizer.jpg)"
+	echo " Symlink:       $SLINK_DIR/backdrop-randomizer.jpg"
 }
 
 list() {
