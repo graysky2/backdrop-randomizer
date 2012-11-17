@@ -1,3 +1,7 @@
+v2.13
+17-Nov-2012
+Clean up stats view.
+
 v2.12
 14-Nov-2012
 Added an 'add pic' function.
@@ -5,7 +9,7 @@ Check for dups and remove them if present.
 
 v2.11
 13-Nov-2012
-Do not cycle if xscreensaver has locked screen or is active
+Do not cycle if xscreensaver has locked screen or is active.
 
 v2.10
 12-Nov-2012
