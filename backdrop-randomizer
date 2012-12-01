@@ -8,7 +8,7 @@
 # see manpage for usage
 #
 
-VERS="2.14"
+VERS="2.15"
 export BLD="\e[01m" RED="\e[01;31m" GRN="\e[01;32m" YLW="\e[01;33m" NRM="\e[00m"
 
 [[ -z "$XDG_CONFIG_HOME" ]] && XDG_CONFIG_HOME="$HOME/.config"	# make sure env var is setup correctly
@@ -164,20 +164,18 @@ add() {
 	if [[ -n $(echo "$file"| grep -E '*.jpg|*.JPG|*.gif|*.GIF|*.png|*.PNG') ]]; then
 		# check for dups
 		if [[ -n $(grep "$file" "$pic_database") ]]; then
-			echo -e " ${RED}$file${NRM}${BLD} already exists in db.  Refusing to add it twice."${NRM}
+			echo -e " ${RED}${file##*/}${NRM}${BLD} ---X not added since already present."${NRM}
 			exit 1
 		fi
 
 		before=$(cat "$pic_database" | wc -l)
 		echo "$file" >> "$pic_database"
 		after=$(cat "$pic_database" | wc -l)
-		echo " Database: $pic_database"
-		echo "$file added to database."
-		echo "Number of pics before: $before"
-		echo "Number of pics after: $after"
+		echo -e " ${GRN}${file##*/}${NRM}${BLD} ---> added to database."${NRM}
+		echo -e " ${BLD}Database: ${NMR}${RED}$pic_database${NRM}${BLD} now contains ${NRM}${YLW}$after${NRM}${BLD} pics."${NRM}
 	else
-		echo "Not a supported image file: $file"
-		echo "Currently, only jpeg, gif, and png images are supported."
+		echo -e " ${BLD}Not a supported image file: ${NRM}${RED}${file##*/}"${NRM}
+		echo -e " ${BLD}Currently, only jpeg, gif, and png images are supported."${NRM}
 	fi
 }
 
