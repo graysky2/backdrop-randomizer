@@ -95,9 +95,9 @@ check() {
 	fi
 
 	# remove dups in database if they are present
-	uniques=$(awk ' !x[$0]++' "$pic_database" | wc -l)
+	uniques=$(gawk ' !x[$0]++' "$pic_database" | wc -l)
 	if [[ "$howmany" != "$uniques" ]]; then
-		awk ' !x[$0]++' "$pic_database" > /tmp/.backdrop_nodups
+		gawk ' !x[$0]++' "$pic_database" > /tmp/.backdrop_nodups
 		mv /tmp/.backdrop_nodups "$pic_database"
 		howmany=$(cat "$pic_database" | wc -l)
 	fi
