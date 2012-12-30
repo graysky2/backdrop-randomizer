@@ -80,7 +80,7 @@ check() {
 	# use only one find command to both test for pics and to generate pic_database
 
 	pic_database="$BD_DIR/backdrop-randomizer.list"
-	[[ ! -f "$pic_database" ]] && find "${PIC_PATH}" -maxdepth "$MAXDEPTH" -name "*.jpg" -o -name "*.JPG" -o -name ".png" -o -name ".PNG" -o -name ".gif" -o -name ".GIF" > "$pic_database" 2>/dev/null
+	[[ ! -f "$pic_database" ]] && find "${PIC_PATH}" -maxdepth "$MAXDEPTH" -name "*.jpg" -o -name "*.JPG" -o -name "*.png" -o -name "*.PNG" -o -name "*.gif" -o -name "*.GIF" > "$pic_database" 2>/dev/null
 
 	howmany=$(cat "$pic_database" | wc -l)
 
