@@ -8,7 +8,7 @@
 # see manpage for usage
 #
 
-VERS="2.15"
+VERS="2.16"
 export BLD="\e[01m" RED="\e[01;31m" GRN="\e[01;32m" YLW="\e[01;33m" NRM="\e[00m"
 
 [[ -z "$XDG_CONFIG_HOME" ]] && XDG_CONFIG_HOME="$HOME/.config"	# make sure env var is setup correctly
