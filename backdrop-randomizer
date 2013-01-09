@@ -8,7 +8,7 @@
 # see manpage for usage
 #
 
-VERS="2.16"
+VERS="2.17"
 export BLD="\e[01m" RED="\e[01;31m" GRN="\e[01;32m" YLW="\e[01;33m" NRM="\e[00m"
 
 [[ -z "$XDG_CONFIG_HOME" ]] && XDG_CONFIG_HOME="$HOME/.config"	# make sure env var is setup correctly
@@ -183,7 +183,10 @@ case "$1" in
 	A|a)
 		check ; arg="$2" ; add ;;
 	R|r)
-		check ; randomize	;;
+		check
+		# if not logged into X there is nothing to do
+		[[ -n $DISPLAY ]] && randomize
+		;;
 	S|s)
 		check ; stats ;;
 	L|l)

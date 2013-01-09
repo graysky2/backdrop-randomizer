@@ -1,3 +1,7 @@
+v2.17
+09-Jan-2013
+Disallow rotation if user is not logged in to X.
+
 v2.16
 30-Dec-2012
 Fixed bug with png and gif extensions (asdf-chan).
