@@ -1,3 +1,7 @@
+v2.18
+10-Jan-2013
+Revert back to v2.16.
+
 v2.17
 09-Jan-2013
 Disallow rotation if user is not logged in to X.
