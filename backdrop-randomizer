@@ -8,7 +8,7 @@
 # see manpage for usage
 #
 
-VERS="2.18"
+VERS="2.19"
 export BLD="\e[01m" RED="\e[01;31m" GRN="\e[01;32m" YLW="\e[01;33m" NRM="\e[00m"
 
 [[ -z "$XDG_CONFIG_HOME" ]] && XDG_CONFIG_HOME="$HOME/.config"	# make sure env var is setup correctly
@@ -185,7 +185,7 @@ case "$1" in
 	R|r)
 		check
 		# if not logged into X there is nothing to do
-		randomize
+		[[ -n $(ps -u $(whoami) | grep xfce4-session) ]] && randomize
 		;;
 	S|s)
 		check ; stats ;;
