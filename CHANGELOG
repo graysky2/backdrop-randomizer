@@ -1,6 +1,10 @@
-v2.21
-16-Mar-2013
-CHange to Makefile construct.
+v2.23
+21-Jun-2013
+Display stats function by default.
+
+v2.22
+15-Jun-2013
+Better readability in code.
 
 v2.20
 10-Mar-2013

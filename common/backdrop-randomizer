@@ -212,10 +212,11 @@ case "$1" in
 		check
 		echo -e "${RED}backdrop-randomizer v$VERS"${NRM}
 		echo
-		echo -e "${BLD} $0${NRM} ${GRN}{r|s|l|a|c}${NRM}"
+		stats
+		echo
+		echo -e "${BLD} $0${NRM} ${GRN}{r|l|a|c}${NRM}"
 		echo
 		echo -e "${BLD} r) ${GRN}R${NRM}${BLD}andomly select a pic from the database and refresh xfdesktop."
-		echo -e "${BLD} s) Display database ${GRN}s${NRM}${BLD}tatistics."
 		echo -e "${BLD} l) ${GRN}L${NRM}${BLD}ist all pics in the database."
 		echo -e "${BLD} a) ${GRN}A${NRM}${BLD}dd the next token to database."
 		echo -e "${BLD} c) ${GRN}C${NRM}${BLD}lear the database and start anew."${NRM}
