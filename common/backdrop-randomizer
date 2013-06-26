@@ -141,10 +141,9 @@ randomize() {
 	# two conditions:
 	# 1) 1 line left (one pic left) so use the pic and regenerate the list
 	# 2) 2 or more lines left so select a random number between 1 and $howmany
-
 	if [[ $howmany -eq 1 ]]; then
 		# condition 1 is true
-		useit=$(sed -n "1 p" "$pic_database") && filename=$(basename $useit)
+		useit=$(sed -n "1 p" "$pic_database") && filename=$(basename "$useit")
 
 		find "${PIC_PATH}" -maxdepth "$MAXDEPTH" -name "*.jpg" -o -name "*.JPG" \
 			-o -name "*.png" -o -name "*.PNG" -o -name "*.gif" \
@@ -160,7 +159,7 @@ randomize() {
 		while [[ $rndpick -lt 2 ]]; do
 			rndpick=$((RANDOM%$howmany+1))
 		done
-		useit=$(sed -n "$rndpick p" "$pic_database") && filename=$(basename $useit)
+		useit=$(sed -n "$rndpick p" "$pic_database") && filename=$(basename "$useit")
 
 		# exclude the one we just picked to create the illusion that we NEVER repeat :)
 		sed -i "/$filename/d" "$pic_database"
