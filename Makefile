@@ -1,4 +1,4 @@
-VERSION = 2.24
+VERSION = 2.26
 PN = backdrop-randomizer
 PN_SHORT = bdr
 
@@ -13,7 +13,7 @@ Q = @
 
 all:
 	$(Q)echo -e '\033[1;32mSetting version\033[0m'
-	$(Q)sed -i -e 's/@VERSION@/'$(VERSION)'/' common/$(PN)
+	$(Q)sed 's/@VERSION@/'$(VERSION)'/' common/$(PN).in > common/$(PN)
 
 install-bin:
 	$(Q)echo -e '\033[1;32mInstalling main script...\033[0m'
@@ -33,3 +33,8 @@ uninstall:
 	$(Q)$(RM) "$(DESTDIR)$(BINDIR)/$(PN_SHORT)"
 	$(Q)$(RM) "$(DESTDIR)$(MANDIR)/$(PN).1.gz"
 	$(Q)$(RM) "$(DESTDIR)$(MANDIR)/$(PN_SHORT).1.gz"
+
+clean:
+	$(RM) -f common/$(PN)
+
+.PHONY: install-bin install-man install uninstall clean
