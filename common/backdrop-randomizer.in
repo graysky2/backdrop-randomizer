@@ -23,7 +23,7 @@ check() {
 		echo '------------------------------------------------------------'
 		echo ' No config file found so creating a fresh one.'
 		echo
-		cat <<EOF > $XDG_CONFIG_HOME/backdrop-randomizer.conf
+		cat <<EOF > "$XDG_CONFIG_HOME/backdrop-randomizer.conf"
 #
 # $XDG_CONFIG_HOME/backdrop-randomizer.conf
 #
@@ -88,7 +88,7 @@ EOF
 		-name "*.jpg" -o -name "*.JPG" -o -name "*.png" -o -name "*.PNG" \
 		-o -name "*.gif" -o -name "*.GIF" > "$pic_database" 2>/dev/null
 
-	howmany=$(cat "$pic_database" | wc -l)
+	howmany=$(wc -l "$pic_database" | awk '{ print $1 }')
 
 	if [[ "$howmany" -eq 0 ]]; then
 		echo "Bad PIC_PATH in $XDG_CONFIG_HOME/backdrop-randomizer.conf"
@@ -105,7 +105,7 @@ EOF
 	if [[ "$howmany" != "$uniques" ]]; then
 		gawk ' !x[$0]++' "$pic_database" > /tmp/.backdrop_nodups
 		mv /tmp/.backdrop_nodups "$pic_database"
-		howmany=$(cat "$pic_database" | wc -l)
+		howmany=$(wc -l "$pic_database" | awk '{ print $1 }')
 	fi
 
 	# do not rotate if screensaver is active or screen is locked
@@ -122,11 +122,11 @@ EOF
 }
 
 stats() {
-	echo -e " ${BLD}Pics left before next db refresh: ${NRM}${GRN}$howmany"${NRM}
+	echo -e " ${BLD}Pics left before next db refresh: ${NRM}${GRN}$howmany${NRM}"
 	echo
-	echo -e " ${BLD}Database:  ${NRM}${RED}$pic_database"${NRM}
-	echo -e " ${BLD}Current:   ${NRM}${GRN}$(readlink -f $SLINK_DIR/backdrop-randomizer.jpg)"${NRM}
-	echo -e " ${BLD}Symlink:   ${NRM}${YLW}$SLINK_DIR/backdrop-randomizer.jpg"${NRM}
+	echo -e " ${BLD}Current:   ${NRM}${GRN}$(readlink -f "$SLINK_DIR/backdrop-randomizer.jpg")${NRM}"
+	echo -e " ${BLD}Symlink:   ${NRM}${YLW}$SLINK_DIR/backdrop-randomizer.jpg${NRM}"
+	echo -e " ${BLD}Database:  ${NRM}${RED}$pic_database${NRM}"
 }
 
 list() {
@@ -138,7 +138,7 @@ cycle() {
 	find "${PIC_PATH}" -maxdepth "$MAXDEPTH" -name "*.jpg" -o -name "*.JPG" \
 		-o -name "*.png" -o -name "*.PNG" -o -name "*.gif" \
 		-o -name "*.GIF" > "$pic_database" 2>/dev/null
-	howmany=$(cat "$pic_database" | wc -l)
+	howmany=$(wc -l "$pic_database" | awk '{ print $1 }')
 }
 
 randomize() {
@@ -174,7 +174,7 @@ randomize() {
 
 add() {
 	if [[ -z "$arg" ]]; then
-		echo -e "${RED}You must provide a supported image."${NRM}
+		echo -e "${RED}You must provide a supported image.${NRM}"
 		exit 1
 	fi
 
@@ -182,18 +182,18 @@ add() {
 	if [[ -n $(echo "$file"| grep -E '*.jpg|*.JPG|*.gif|*.GIF|*.png|*.PNG') ]]; then
 		# check for dups
 		if [[ -n $(grep "$file" "$pic_database") ]]; then
-			echo -e " ${RED}${file##*/}${NRM}${BLD} ---X not added since already present."${NRM}
+			echo -e " ${RED}${file##*/}${NRM}${BLD} ---X not added since already present.${NRM}"
 			exit 1
 		fi
 
-		before=$(cat "$pic_database" | wc -l)
+		before=$(wc -l "$pic_database" | awk '{ print $1 }')
 		echo "$file" >> "$pic_database"
-		after=$(cat "$pic_database" | wc -l)
-		echo -e " ${GRN}${file##*/}${NRM}${BLD} ---> added to database."${NRM}
-		echo -e " ${BLD}Database: ${NMR}${RED}$pic_database${NRM}${BLD} now contains ${NRM}${YLW}$after${NRM}${BLD} pics."${NRM}
+		after=$(wc -l "$pic_database" | awk '{ print $1 }')
+		echo -e " ${GRN}${file##*/}${NRM}${BLD} ---> added to database.${NRM}"
+		echo -e " ${BLD}Database: ${NMR}${RED}$pic_database${NRM}${BLD} now contains ${NRM}${YLW}$after${NRM}${BLD} pics.${NRM}"
 	else
-		echo -e " ${BLD}Not a supported image file: ${NRM}${RED}${file##*/}"${NRM}
-		echo -e " ${BLD}Currently, only jpeg, gif, and png images are supported."${NRM}
+		echo -e " ${BLD}Not a supported image file: ${NRM}${RED}${file##*/}${NRM}"
+		echo -e " ${BLD}Currently, only jpeg, gif, and png images are supported.${NRM}"
 	fi
 }
 
@@ -213,7 +213,7 @@ case "$1" in
 		check ; cycle ; randomize ;;
 	*) 
 		check
-		echo -e "${RED}backdrop-randomizer v$VERS"${NRM}
+		echo -e "${RED}backdrop-randomizer v$VERS${NRM}"
 		echo
 		stats
 		echo
@@ -222,8 +222,8 @@ case "$1" in
 		echo -e "${BLD} r) ${GRN}R${NRM}${BLD}andomly select a pic from the database and refresh xfdesktop."
 		echo -e "${BLD} l) ${GRN}L${NRM}${BLD}ist all pics in the database."
 		echo -e "${BLD} a) ${GRN}A${NRM}${BLD}dd the next token to database."
-		echo -e "${BLD} c) ${GRN}C${NRM}${BLD}lear the database and start anew."${NRM}
+		echo -e "${BLD} c) ${GRN}C${NRM}${BLD}lear the database and start anew.${NRM}"
 		echo
-		echo -e " Add all new pics to the database: ${YLW}find -L /path/to/pics -type f -mtime -1 | xargs -n1 bdr a"${NRM}
+		echo -e " Add all new pics to the database: ${YLW}find -L /path/to/pics -type f -mtime -1 | xargs -n1 bdr a${NRM}"
 		;;
 esac
