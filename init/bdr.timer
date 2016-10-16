@@ -1,0 +1,6 @@
+[Unit]
+Description=Timer for backdrop-randomizer - 20min
+PartOf=bdr.service
+
+[Timer]
+OnUnitActiveSec=20min

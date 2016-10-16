@@ -1,0 +1,13 @@
+[Unit]
+Description=Backdrop-randomizer
+Documentation=man:bdr(1)
+Documentation=https://github.com/graysky2/backdrop-randomizer
+RequiresMountsFor=/home/
+Wants=bdr.timer
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/backdrop-randomizer r
+
+[Install]
+WantedBy=default.target

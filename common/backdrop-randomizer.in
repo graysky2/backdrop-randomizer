@@ -110,11 +110,11 @@ EOF
 	if [[ -n $(pidof xscreensaver) ]] && [[ -x /usr/bin/xscreensaver-command  ]]; then
 		[[ -n $(xscreensaver-command -time | grep "screen blanked since" 2>/dev/null)  ]]	||
 			[[ -n $(xscreensaver-command -time | grep "screen locked since" 2>/dev/null) ]] &&
-			exit 2
+			exit 0
 	fi
 
 	# for xlock
-	[[ -n $(pidof xlock) ]] && exit 2
+	[[ -n $(pidof xlock) ]] && exit 0
 
 }
 
