@@ -12,10 +12,9 @@ VERS="@VERSION@"
 export BLD="\e[01m" RED="\e[01;31m" GRN="\e[01;32m" YLW="\e[01;33m" NRM="\e[00m"
 
 # make sure env var is setup correctly
-[[ -z "$XDG_CONFIG_HOME" ]] && \
-	XDG_CONFIG_HOME="$HOME/.config"
+[[ -z "$XDG_CONFIG_HOME" ]] && XDG_CONFIG_HOME="$HOME/.config"
 
-cfg_file=$XDG_CONFIG_HOME/backdrop-randomizer.conf
+cfg_file="$XDG_CONFIG_HOME/backdrop-randomizer.conf"
 
 check() {
 	if [[ ! -f "$cfg_file" ]]; then
@@ -61,8 +60,6 @@ EOF
 		echo
 		echo 'You have defined a non-integer value.'
 		exit 1
-	else
-		/bin/true
 	fi
 
 	[[ -z "$BD_DIR" ]] && BD_DIR=$XDG_CONFIG_HOME
@@ -111,8 +108,8 @@ EOF
 	# do not rotate if screensaver is active or screen is locked
 	# for xscreensaver
 	if [[ -n $(pidof xscreensaver) ]] && [[ -x /usr/bin/xscreensaver-command  ]]; then
-		[[ -n $(xscreensaver-command -time | grep "screen blanked since" 2>/dev/null)  ]]	|| \
-			[[ -n $(xscreensaver-command -time | grep "screen locked since" 2>/dev/null) ]] && \
+		[[ -n $(xscreensaver-command -time | grep "screen blanked since" 2>/dev/null)  ]]	||
+			[[ -n $(xscreensaver-command -time | grep "screen locked since" 2>/dev/null) ]] &&
 			exit 2
 	fi
 
@@ -123,10 +120,7 @@ EOF
 
 stats() {
 	echo -e " ${BLD}Pics left before next db refresh: ${NRM}${GRN}$howmany${NRM}"
-	echo
 	echo -e " ${BLD}Current:   ${NRM}${GRN}$(readlink -f "$SLINK_DIR/backdrop-randomizer.jpg")${NRM}"
-	echo -e " ${BLD}Symlink:   ${NRM}${YLW}$SLINK_DIR/backdrop-randomizer.jpg${NRM}"
-	echo -e " ${BLD}Database:  ${NRM}${RED}$pic_database${NRM}"
 }
 
 list() {
@@ -161,7 +155,7 @@ randomize() {
 		# condition 2 is true
 		rndpick=1
 		while [[ $rndpick -lt 2 ]]; do
-			rndpick=$((RANDOM%$howmany+1))
+			rndpick=$((RANDOM%howmany+1))
 		done
 		useit=$(sed -n "$rndpick p" "$pic_database") && filename=$(basename "$useit")
 
@@ -186,7 +180,6 @@ add() {
 			exit 1
 		fi
 
-		before=$(wc -l "$pic_database" | awk '{ print $1 }')
 		echo "$file" >> "$pic_database"
 		after=$(wc -l "$pic_database" | awk '{ print $1 }')
 		echo -e " ${GRN}${file##*/}${NRM}${BLD} ---> added to database.${NRM}"

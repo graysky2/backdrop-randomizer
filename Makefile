@@ -1,4 +1,4 @@
-VERSION = 2.27
+VERSION = 2.28
 PN = backdrop-randomizer
 PN_SHORT = bdr
 
