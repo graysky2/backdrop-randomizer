@@ -1,15 +1,21 @@
 #!/bin/bash
 #
+# shellcheck disable=1090,2016
+#
 # backdrop-randomizer
 # By graysky <graysky AT archlinux DOT us>
 #
-#	https://github.com/graysky2/backdrop-randomizer
+# https://github.com/graysky2/backdrop-randomizer
 #
 # see manpage for usage
 #
 
+BLD="\e[01m"
+RED="\e[01;31m"
+GRN="\e[01;32m"
+YLW="\e[01;33m"
+NRM="\e[00m"
 VERS="@VERSION@"
-export BLD="\e[01m" RED="\e[01;31m" GRN="\e[01;32m" YLW="\e[01;33m" NRM="\e[00m"
 
 # make sure env var is setup correctly
 [[ -z "$XDG_CONFIG_HOME" ]] && XDG_CONFIG_HOME="$HOME/.config"
@@ -18,7 +24,7 @@ cfg_file="$XDG_CONFIG_HOME/backdrop-randomizer.conf"
 
 check() {
   if [[ ! -f "$cfg_file" ]]; then
-    #	create $XDG_CONFIG_HOME/backdrop-randomizer.conf
+    # create $XDG_CONFIG_HOME/backdrop-randomizer.conf
     echo '------------------------------------------------------------'
     echo ' No config file found so creating a fresh one.'
     echo
@@ -54,7 +60,7 @@ EOF
 
   # check each var for correctness
   [[ -z "$MAXDEPTH" ]] && MAXDEPTH=1
-  result=$(echo "$MAXDEPTH" | egrep ^[[:digit:]]+$)
+  result=$(echo "$MAXDEPTH" | grep -E '^[[:digit:]]+$')
   if [ "$result" = "" ] ; then
     echo 'Bad MAXDEPTH in $XDG_CONFIG_HOME/backdrop-randomizer.conf'
     echo
@@ -108,8 +114,12 @@ EOF
   # do not rotate if screensaver is active or screen is locked
   # for xscreensaver
   if [[ -n $(pidof xscreensaver) ]] && [[ -x /usr/bin/xscreensaver-command  ]]; then
-    [[ -n $(xscreensaver-command -time | grep "screen blanked since" 2>/dev/null)  ]]	||
-      [[ -n $(xscreensaver-command -time | grep "screen locked since" 2>/dev/null) ]] &&
+    xscreensaver-command -time | grep -q "screen blanked since" 2>/dev/null ||
+      xscreensaver-command -time | grep -q  "screen locked since" 2>/dev/null &&
+      exit 0
+
+    xscreensaver-command -time | grep -q "screen blanked since" ||
+      xscreensaver-command -time | grep "screen locked since" 2>/dev/null &&
       exit 0
   fi
 
@@ -150,7 +160,7 @@ randomize() {
     # exclude the one we just picked to create the illusion that we NEVER repeat :)
     sed -i "/$filename/d" "$pic_database"
     ln -sf "$useit" "$SLINK_DIR"/backdrop-randomizer.jpg
-    [[ ! -z $(pidof xfdesktop) ]] && DISPLAY=:0.0 /usr/bin/xfdesktop --reload
+    [[ -n $(pidof xfdesktop) ]] && DISPLAY=:0.0 /usr/bin/xfdesktop --reload
   elif [[ $howmany -ge 2 ]]; then
     # condition 2 is true
     rndpick=1
@@ -162,7 +172,7 @@ randomize() {
     # exclude the one we just picked to create the illusion that we NEVER repeat :)
     sed -i "/$filename/d" "$pic_database"
     ln -sf "$useit" "$SLINK_DIR"/backdrop-randomizer.jpg
-    [[ ! -z $(pidof xfdesktop) ]] && DISPLAY=:0.0 /usr/bin/xfdesktop --reload
+    [[ -n $(pidof xfdesktop) ]] && DISPLAY=:0.0 /usr/bin/xfdesktop --reload
   fi
 }
 
@@ -173,9 +183,9 @@ add() {
   fi
 
   file=$(/usr/bin/readlink -f "$arg")
-  if [[ -n $(echo "$file"| grep -E '*.jpg|*.JPG|*.gif|*.GIF|*.png|*.PNG') ]]; then
+  if readlink -f "$file" | grep -E '.*jpg$|.*JPG$|.*gif$|.*GIF$|.*png$|.*PNG$'; then
     # check for dups
-    if [[ -n $(grep "$file" "$pic_database") ]]; then
+    if grep "$file" "$pic_database"; then
       echo -e " ${RED}${file##*/}${NRM}${BLD} ---X not added since already present.${NRM}"
       exit 1
     fi
@@ -196,7 +206,7 @@ case "$1" in
   R|r)
     check
     # if not logged into X there is nothing to do
-    [[ -n $(ps -u $(whoami) | grep xfce4-session) ]] && randomize
+    pgrep -u "$(whoami)" xfce4-session && randomize
     ;;
   S|s)
     check ; stats ;;
@@ -204,7 +214,7 @@ case "$1" in
     check ; list ;;
   C|c)
     check ; cycle ; randomize ;;
-  *) 
+  *)
     check
     echo -e "${RED}backdrop-randomizer v$VERS${NRM}"
     echo
