@@ -1,4 +1,4 @@
-VERSION = 2.31
+VERSION = 2.32
 PN = backdrop-randomizer
 PN_SHORT = bdr
 
@@ -35,8 +35,6 @@ install-man:
 	$(Q)echo -e '\033[1;32mInstalling manpage...\033[0m'
 	$(INSTALL_DIR) "$(DESTDIR)$(MANDIR)"
 	$(INSTALL_DATA) doc/$(PN).1 "$(DESTDIR)$(MANDIR)/$(PN_SHORT).1"
-	gzip -9 "$(DESTDIR)$(MANDIR)/$(PN_SHORT).1"
-	ln -s $(PN_SHORT).1.gz "$(DESTDIR)$(MANDIR)/$(PN).1.gz"
 
 install: install-bin install-man install-init
 
