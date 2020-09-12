@@ -112,6 +112,11 @@ EOF
   fi
 
   # do not rotate if screensaver is active or screen is locked
+  # for xfce4-screensaver
+  if [[ -n $(pidof xfce4-screensaver) ]] && [[ -x /usr/bin/xfce4-screensaver-command ]]; then
+    xfce4-screensaver-command -q | grep -q "The screensaver is active" 2>/dev/null && exit 0
+  fi
+
   # for xscreensaver
   if [[ -n $(pidof xscreensaver) ]] && [[ -x /usr/bin/xscreensaver-command  ]]; then
     xscreensaver-command -time | grep -q "screen blanked since" 2>/dev/null ||
@@ -125,7 +130,6 @@ EOF
 
   # for xlock
   [[ -n $(pidof xlock) ]] && exit 0
-
 }
 
 stats() {
