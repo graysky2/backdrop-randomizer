@@ -110,15 +110,17 @@ EOF
     mv /tmp/.backdrop_nodups "$pic_database"
     howmany=$(wc -l "$pic_database" | awk '{ print $1 }')
   fi
+}
 
+locked() {
   # do not rotate if screensaver is active or screen is locked
   # for xfce4-screensaver
-  if [[ -n $(pidof xfce4-screensaver) ]] && [[ -x /usr/bin/xfce4-screensaver-command ]]; then
+  if [[ -n $(pidof xfce4-screensaver) ]] && [[ -x xfce4-screensaver-command ]]; then
     xfce4-screensaver-command -q | grep -q "The screensaver is active" 2>/dev/null && exit 0
   fi
 
   # for xscreensaver
-  if [[ -n $(pidof xscreensaver) ]] && [[ -x /usr/bin/xscreensaver-command  ]]; then
+  if [[ -n $(pidof xscreensaver) ]] && [[ -x xscreensaver-command  ]]; then
     xscreensaver-command -time | grep -q "screen blanked since" 2>/dev/null ||
       xscreensaver-command -time | grep -q  "screen locked since" 2>/dev/null &&
       exit 0
@@ -164,7 +166,7 @@ randomize() {
     # exclude the one we just picked to create the illusion that we NEVER repeat :)
     sed -i "/$filename/d" "$pic_database"
     ln -sf "$useit" "$SLINK_DIR"/backdrop-randomizer.jpg
-    [[ -n $(pidof xfdesktop) ]] && DISPLAY=:0.0 /usr/bin/xfdesktop --reload
+    [[ -n $(pidof xfdesktop) ]] && DISPLAY=:0.0 xfdesktop --reload
   elif [[ $howmany -ge 2 ]]; then
     # condition 2 is true
     rndpick=1
@@ -176,7 +178,7 @@ randomize() {
     # exclude the one we just picked to create the illusion that we NEVER repeat :)
     sed -i "/$filename/d" "$pic_database"
     ln -sf "$useit" "$SLINK_DIR"/backdrop-randomizer.jpg
-    [[ -n $(pidof xfdesktop) ]] && DISPLAY=:0.0 /usr/bin/xfdesktop --reload
+    [[ -n $(pidof xfdesktop) ]] && DISPLAY=:0.0 xfdesktop --reload
   fi
 }
 
@@ -186,7 +188,7 @@ add() {
     exit 1
   fi
 
-  file=$(/usr/bin/readlink -f "$arg")
+  file=$(readlink -f "$arg")
   if readlink -f "$file" | grep -E '.*jpg$|.*JPG$|.*gif$|.*GIF$|.*png$|.*PNG$'; then
     # check for dups
     if grep "$file" "$pic_database"; then
@@ -207,29 +209,30 @@ add() {
 case "$1" in
   A|a)
     check ; arg="$2" ; add ;;
+  C|c)
+    check ; cycle ; randomize ;;
+  L|l)
+    check ; list ;;
   R|r)
-    check
+    check ; locked
     # if not logged into X there is nothing to do
     pgrep -u "$(whoami)" xfce4-session 1>/dev/null && randomize
     ;;
   S|s)
     check ; stats ;;
-  L|l)
-    check ; list ;;
-  C|c)
-    check ; cycle ; randomize ;;
   *)
     check
     echo -e "${RED}backdrop-randomizer v$VERS${NRM}"
     echo
     stats
     echo
-    echo -e "${BLD} $0${NRM} ${GRN}{r|l|a|c}${NRM}"
+    echo -e "${BLD} $0${NRM} ${GRN}{a|c|l|r|s}${NRM}"
     echo
-    echo -e "${BLD} r) ${GRN}R${NRM}${BLD}andomly select a pic from the database and refresh xfdesktop."
-    echo -e "${BLD} l) ${GRN}L${NRM}${BLD}ist all pics in the database."
     echo -e "${BLD} a) ${GRN}A${NRM}${BLD}dd the next token to database."
     echo -e "${BLD} c) ${GRN}C${NRM}${BLD}lear the database and start anew.${NRM}"
+    echo -e "${BLD} l) ${GRN}L${NRM}${BLD}ist all pics in the database."
+    echo -e "${BLD} r) ${GRN}R${NRM}${BLD}andomly select a pic from the database and refresh xfdesktop."
+    echo -e "${BLD} s) ${GRN}S${NRM}${BLD}how database stats."
     echo
     echo -e " Add all new pics to the database: ${YLW}find -L /path/to/pics -type f -mtime -1 | xargs -n1 bdr a${NRM}"
     ;;
