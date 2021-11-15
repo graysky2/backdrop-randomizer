@@ -113,6 +113,11 @@ EOF
 }
 
 locked() {
+  # do not rotate if monitor is asleep or in standby
+  if xset q | grep -q "Monitor is Off" || xset q | grep -q "Monitor is Standby"; then
+    exit 0
+  fi
+
   # do not rotate if screensaver is active or screen is locked
   # for xfce4-screensaver
   if [[ -n $(pidof xfce4-screensaver) ]] && [[ -x xfce4-screensaver-command ]]; then
